@@ -37,11 +37,40 @@ class DisplayManager: ObservableObject {
     didSet { UserDefaults.standard.set(displayMode, forKey: "displayMode") }
   }
 
-  var autoDisable: Bool { displayMode == 0 || displayMode == 1 }
+  var autoDisable: Bool { displayMode == 0 || (displayMode == 1 && checkExternalDisplay()) }
   var autoEnable: Bool { displayMode == 1 }
 
   func enterCustomMode() {
     displayMode = 2
+  }
+
+  func enterExternalDisplayOnlyMode() {
+    displayMode = 1
+    UserDefaults.standard.set(displayMode, forKey: "displayMode")
+  }
+
+  func applyExternalDisplayOnlyPolicy(completion: (() -> Void)? = nil) {
+    enterExternalDisplayOnlyMode()
+
+    guard isAvailable else {
+      completion?()
+      return
+    }
+
+    if checkExternalDisplay() {
+      if !isBuiltInDisplayDisabled {
+        disableBuiltInDisplay()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+          completion?()
+        }
+      } else {
+        completion?()
+      }
+      return
+    }
+
+    enableBuiltInDisplay()
+    completion?()
   }
 
   func checkExternalDisplay() -> Bool {
@@ -64,6 +93,8 @@ class DisplayManager: ObservableObject {
   var onBuiltInDisplayAppeared: (() -> Void)?
 
   init() {
+    enterExternalDisplayOnlyMode()
+
     builtInDisplayID = Self.findBuiltInDisplay()
 
     if builtInDisplayID == nil {
@@ -81,10 +112,10 @@ class DisplayManager: ObservableObject {
 
     startMonitoringDisplayChanges()
 
-    // Auto-disable on launch if enabled
-    if autoDisable && isAvailable {
+    // Start each launch in "Disable only while external display is connected" mode.
+    if isAvailable {
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-        self?.disableBuiltInDisplay()
+        self?.applyExternalDisplayOnlyPolicy()
       }
     }
   }

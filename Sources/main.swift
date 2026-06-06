@@ -4,6 +4,7 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
   var window: NSWindow!
   let displayManager = DisplayManager()
+  private var isApplyingTerminationPolicy = false
 
   private func moveWindowToExternalDisplay() {
     guard let window = window else { return }
@@ -43,7 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       backing: .buffered,
       defer: false
     )
-    window.title = "Display Control"
+    window.title = "DisableMainDisplay"
     window.contentView = NSHostingView(rootView: contentView)
 
     // Place window on an external display (not the built-in)
@@ -61,17 +62,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     true
   }
 
+  func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+    guard !isApplyingTerminationPolicy else { return .terminateNow }
+
+    isApplyingTerminationPolicy = true
+    displayManager.applyExternalDisplayOnlyPolicy {
+      sender.reply(toApplicationShouldTerminate: true)
+    }
+
+    return .terminateLater
+  }
+
   func applicationWillTerminate(_ notification: Notification) {
-    // Always apply mode 1 logic on quit: keep disabled if external exists, otherwise enable
-    if displayManager.checkExternalDisplay() {
-      // External display is connected — leave built-in display disabled
-      return
-    }
-    
-    // No external display — re-enable the built-in display
-    if displayManager.isBuiltInDisplayDisabled {
-      displayManager.enableBuiltInDisplay()
-    }
+    // The second-option policy has already been applied in applicationShouldTerminate.
   }
 }
 

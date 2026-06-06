@@ -9,9 +9,9 @@
     <key>CFBundleIdentifier</key>
     <string>com.local.DisableMainDisplay</string>
     <key>CFBundleName</key>
-    <string>Display Control</string>
+    <string>DisableMainDisplay</string>
     <key>CFBundleDisplayName</key>
-    <string>Display Control</string>
+    <string>DisableMainDisplay</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>

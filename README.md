@@ -1,50 +1,122 @@
-# Display Control
+# DisableMainDisplay
 
-A simple macOS app to disable the MacBook's built-in display when using external monitors. Useful if your laptop screen is broken or you simply prefer using only external displays with the lid open.
+DisableMainDisplay is a small macOS utility for using a MacBook with external
+displays while keeping the built-in display out of the way.
 
-## How It Works
+It can mirror the built-in display onto an external display, set the built-in
+display brightness to zero, and restore the built-in display when needed.
 
-- **Mirrors** the built-in display onto an external display (removing it from the desktop arrangement)
-- **Sets brightness to 0** via Apple's DisplayServices framework (turns off the backlight)
-- **Restores everything** when you re-enable — removes mirroring and restores brightness
+## App Behavior
 
-The external display keeps its native resolution and arrangement.
+The app has three radio options:
+
+- **Keep main display off**: keeps the built-in display disabled, even without
+  an external display.
+- **Disable only while external display is connected**: disables the built-in
+  display when an external display is connected, and enables it when no external
+  display is connected.
+- **Custom Mode**: used after pressing the manual Disable or Enable buttons.
+
+On every launch, the app ignores the previously selected radio option and starts
+in **Disable only while external display is connected** mode.
+
+On quit, the app also applies that same mode before closing:
+
+- If an external display is connected, the built-in display is left disabled.
+- If no external display is connected, the built-in display is re-enabled.
+
+This keeps the machine in a predictable state even if a different option was
+selected during the last session.
 
 ## Features
 
-- **Disable / Enable buttons** for manual control
-- **Two modes** (persistent between launches):
-  - **Keep main display off** — always disables the built-in display; only the manual Enable button turns it back on
-  - **Only while external display is connected** — auto-disables when an external is plugged in, auto-re-enables when all externals are removed
-- **Auto-disable on launch** if an external display is connected
-- **Handles hot-plug** — plugging/unplugging external monitors re-applies the correct state
-- **Multiple external monitors** supported — mirrors onto whichever external is available
-- **Window stays on external display** — never opens on the broken built-in screen
-- **Single instance** — launching again brings the existing window to front
-- **Safety** — re-enables built-in display when the app quits
+- Manual Disable and Enable buttons.
+- Automatic launch policy based on whether an external display is connected.
+- Display hot-plug handling for external display changes.
+- Window placement on an external display when one is available.
+- Single-instance behavior: launching a second copy activates the existing app.
+- App icon and plist packaging through shell scripts.
 
 ## Requirements
 
-- macOS 13 (Ventura) or later
-- Apple Silicon Mac
+- macOS 13 Ventura or later.
+- Apple Silicon Mac.
+- Xcode command line tools for building or signing.
 
-## Build & Install
+## Scripts
 
-Just run:
+### `build_app.sh`
 
-```bash
-zsh build_app.sh
+Builds a fresh release executable with SwiftPM and packages it as:
+
+```text
+DisableMainDisplay.app
 ```
 
-This is the only command you need. It runs `swift build -c release`, creates `DisplayControl.app` with the icon and Info.plist, and ad-hoc signs it — all in one step.
-
-If you only want the raw binary without the `.app` bundle:
+Use this when you want a release app bundle:
 
 ```bash
+cd /Users/hong/m/DisableMainDisplay
+./build_app.sh
+```
+
+The script does the full release flow:
+
+```text
 swift build -c release
-# Binary at .build/release/DisableMainDisplay
+create DisableMainDisplay.app
+copy Info.plist
+copy AppIcon.icns
+ad-hoc sign the app
 ```
 
-## Install
+You do not need to build in Xcode before running this script.
 
-Copy `DisplayControl.app` to `/Applications` or anywhere you like. On first launch, right-click → Open → Open to bypass Gatekeeper.
+### `bundle_xcode_debug_app.sh`
+
+Packages an existing Xcode Debug build into:
+
+```text
+DisableMainDisplay.app
+```
+
+This script does not compile. Build Debug in Xcode first, then run:
+
+```bash
+cd /Users/hong/m/DisableMainDisplay
+./bundle_xcode_debug_app.sh
+```
+
+The script searches common Xcode DerivedData locations for the newest Debug
+`DisableMainDisplay` executable. If it finds one, it deletes any existing
+`DisableMainDisplay.app` in the repo root and creates a fresh app bundle.
+
+You can also pass the Debug executable path explicitly:
+
+```bash
+./bundle_xcode_debug_app.sh /path/to/Build/Products/Debug/DisableMainDisplay
+```
+
+## App Bundle Name
+
+Both scripts create the same app bundle:
+
+```text
+DisableMainDisplay.app
+```
+
+Running either script replaces any existing `DisableMainDisplay.app` in the
+repo root.
+
+The raw file named `DisableMainDisplay` is only the executable. It is not an app
+bundle and will show Finder's generic executable icon.
+
+## Launching
+
+Open the app:
+
+```bash
+open DisableMainDisplay.app
+```
+
+On first launch, macOS may require right-clicking the app and choosing Open.

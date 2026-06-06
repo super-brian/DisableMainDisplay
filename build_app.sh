@@ -6,8 +6,9 @@ cd "$(dirname "$0")"
 echo "Building..."
 swift build -c release
 
-APP="DisplayControl.app"
+APP="DisableMainDisplay.app"
 echo "Creating $APP bundle..."
+rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/DisableMainDisplay "$APP/Contents/MacOS/DisableMainDisplay"
 cp Info.plist "$APP/Contents/Info.plist"
@@ -17,5 +18,4 @@ echo "Ad-hoc signing..."
 codesign --force --sign - "$APP"
 
 echo "Done!"
-echo "  DisplayControl.app"
-
+echo "  $APP"
