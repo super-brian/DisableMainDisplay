@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:DisableMainDisplay}",
+      "name": "Debug DisableMainDisplay",
+      "target": "DisableMainDisplay",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug DisableMainDisplay"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:DisableMainDisplay}",
+      "name": "Release DisableMainDisplay",
+      "target": "DisableMainDisplay",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release DisableMainDisplay"
+    }
+  ]
+}
