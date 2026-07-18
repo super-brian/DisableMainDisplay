@@ -7,7 +7,10 @@ let package = Package(
   targets: [
     .executableTarget(
       name: "DisableMainDisplay",
-      path: "Sources"
+      path: "Sources",
+      linkerSettings: [
+        .linkedFramework("ServiceManagement")
+      ]
     )
   ]
 )
